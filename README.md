@@ -389,19 +389,4 @@ To compile the minified production client:
 ```bash
 npm run build
 ```
----
-## 🎬 Play the Product Demo Presentation Video Deck
-We have created an interactive, automated 3-minute video presentation that details the system, pain points, features, architecture, and technology selections.
-### **How to Play:**
-1.  Locate the file [AetherInsight_Presentation.html](file:///C:/Users/Aasi%20asf/.gemini/antigravity/scratch/aether-insight/AetherInsight_Presentation.html) in your browser.
-2.  Alternatively, you can open it directly by dragging the file into a browser or navigating to:
-    ```
-    file:///C:/Users/Aasi asf/.gemini/antigravity/scratch/aether-insight/AetherInsight_Presentation.html
-    ```
-3.  Click the gold **"PLAY DEMO PRESENTATION"** button to start the presentation.
-4.  **Audio features**:
-    *   **AI Voiceover Narration**: Automatically voices the script details sequentially using browser text-to-speech.
-    *   **Space Ambient Sound Track**: Plays a synthesized, polyphonic backing chord progression using the **Web Audio API** (detuned triangle oscillators and sweep filter filters).
-    *   **Playback dashboard**: Includes play/pause triggers, next/previous buttons, and a progress timeline.
----
 *Created for the Microsoft Hackathon - AetherInsight Team*
