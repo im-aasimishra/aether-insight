@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherInsight - Product Demo Presentation Player</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg-space: #070b12;
+      --bg-card: rgba(13, 20, 33, 0.7);
+      --bg-card-solid: #0d1421;
+      --color-gold: #c5a02b;
+      --color-gold-glow: rgba(197, 160, 43, 0.25);
+      --color-teal: #14b8a6;
+      --color-teal-glow: rgba(20, 184, 166, 0.25);
+      --color-rose: #f43f5e;
+      --color-blue: #3b82f6;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #475569;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Space Grotesk', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-space);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(197, 160, 43, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(20, 184, 166, 0.04) 0%, transparent 45%);
+    }
+
+    /* Left Control Sidebar */
+    .control-sidebar {
+      background: rgba(11, 16, 27, 0.85);
+      border-right: 1px solid rgba(197, 160, 43, 0.15);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100vh;
+      z-index: 10;
+    }
+
+    .branding h2 {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .branding h2 span {
+      color: var(--color-gold);
+    }
+
+    .branding p {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .scene-selector-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 2rem 0;
+      flex-grow: 1;
+    }
+
+    .scene-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.3s;
+    }
+
+    .scene-btn.active {
+      background: rgba(197, 160, 43, 0.08);
+      border-color: var(--color-gold);
+      color: var(--text-primary);
+    }
+
+    .scene-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+    }
+
+    .scene-btn.active .scene-num {
+      background: var(--color-gold);
+      border-color: var(--color-gold);
+      color: var(--bg-space);
+      font-weight: 700;
+    }
+
+    /* Presentation Settings Panel */
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--text-muted);
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--color-gold);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(14px);
+    }
+
+    /* Right Main Player Screen */
+    .player-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Cinematic Viewport Screen */
+    .viewport-screen {
+      flex-grow: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #04070c;
+    }
+
+    /* Computer Monitor Frame Mockup */
+    .monitor-frame {
+      width: 90%;
+      height: 75%;
+      border: 12px solid #111827;
+      border-bottom: 24px solid #1f2937;
+      border-radius: 16px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(197, 160, 43, 0.05);
+      background: var(--bg-space);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .monitor-frame::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 8px;
+      background: #0f172a;
+      border-radius: 4px;
+    }
+
+    /* Dynamic Zoom Camera Wrapper */
+    .camera-wrapper {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-origin: center center;
+    }
+
+    /* Virtual Mouse Cursor */
+    .virtual-cursor {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border: 2px solid var(--color-gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(197, 160, 43, 0.8);
+      transition: top 1.5s cubic-bezier(0.25, 1, 0.5, 1), left 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* Captions/Subtitles Overlay */
+    .caption-bar {
+      height: 80px;
+      background: rgba(8, 12, 20, 0.95);
+      border-top: 1px solid rgba(197, 160, 43, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4rem;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 500;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+
+    .caption-bar span {
+      max-width: 880px;
+    }
+
+    .caption-bar strong {
+      color: var(--color-gold);
+    }
+
+    /* Controller Panel Dash */
+    .controller-bar {
+      height: 70px;
+      background: #0d1421;
+      border-top: 1px solid rgba(197, 160, 43, 0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      z-index: 10;
+    }
+
+    .timeline-container {
+      flex: 1;
+      margin: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .time-stamp {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      width: 45px;
+    }
+
+    .progress-bar-bg {
+      flex-grow: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--color-gold);
+      border-radius: 2px;
+      box-shadow: 0 0 6px var(--color-gold);
+    }
+
+    .playback-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .control-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .control-btn.play-pause {
+      background: var(--color-gold);
+      color: var(--bg-space);
+      width: 40px;
+      height: 40px;
+    }
+
+    .control-btn.play-pause:hover {
+      background: #f1c43f;
+      color: var(--bg-space);
+      transform: scale(1.05);
+    }
+
+    /* SCENE SCREENS VISUAL CONTENT */
+    .screen {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease;
+      background: var(--bg-space);
+      padding: 2rem;
+    }
+
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Scene 1: Welcome */
+    .logo-pulse {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background: var(--color-gold);
+      box-shadow: 0 0 20px var(--color-gold-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: var(--bg-space);
+      margin: 0 auto 1.5rem auto;
+      animation: pulseLogo 3s infinite ease-in-out;
+    }
+
+    @keyframes pulseLogo {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px var(--color-gold-glow); }
+      50% { transform: scale(1.08); box-shadow: 0 0 35px var(--color-gold); }
+    }
+
+    /* Scene 2: Frame layout simulation */
+    .app-mockup {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      height: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0d121c;
+    }
+
+    .mock-sidebar {
+      background: #090d14;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .mock-menu-item {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      width: 100%;
+    }
+
+    .mock-menu-item.active {
+      background: var(--color-gold);
+    }
+
+    .mock-main {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+
+    .mock-header-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .mock-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    .mock-kpi {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      padding: 0.75rem;
+      height: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .mock-kpi-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      width: 60%;
+      margin-top: 0.25rem;
+    }
+
+    /* Scene 3: Flow simulation */
+    .flow-card-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 80%;
+    }
+
+    .flow-node {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(197, 160, 43, 0.15);
+      border-radius: 12px;
+      width: 160px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .flow-node.highlight {
+      border-color: var(--color-gold);
+      box-shadow: 0 0 15px var(--color-gold-glow);
+    }
+
+    .flow-arrow {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      animation: bounceArrow 1.5s infinite ease-in-out;
+    }
+
+    @keyframes bounceArrow {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(5px); }
+    }
+
+    /* Scene 4: Architecture diagram flow */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      height: 90%;
+      align-content: center;
+    }
+
+    .arch-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .arch-card-header {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-gold);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.25rem;
+    }
+
+    .arch-item {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.01);
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    /* Visual overlays / Callouts */
+    .viewport-callout {
+      position: absolute;
+      background: var(--color-gold);
+      color: var(--bg-space);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    /* Large play overlay */
+    .play-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(5, 7, 12, 0.95);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .play-overlay-btn {
+      background: var(--color-gold);
+      color: var(--bg-space);
+      border: none;
+      padding: 1.25rem 2.5rem;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      box-shadow: 0 10px 30px var(--color-gold-glow);
+      transition: all 0.3s;
+    }
+
+    .play-overlay-btn:hover {
+      background: #f1c43f;
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px var(--color-gold);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay to enable AudioContext & SpeechSynthesis -->
+  <div class="play-overlay" id="play-overlay">
+    <div class="logo-pulse">A</div>
+    <h2 style="font-family: var(--font-mono); letter-spacing: 0.05em; font-size: 1.5rem;">AETHERINSIGHT PRODUCT DEMO</h2>
+    <p style="color: var(--text-secondary); max-width: 480px; text-align: center; font-size: 0.85rem; line-height: 1.6;">
+      To view the 3-minute startup-style product presentation with voice synthesis narration and synthesized ambient backing music, click the button below.
+    </p>
+    <button class="play-overlay-btn" id="start-demo-btn">PLAY DEMO PRESENTATION</button>
+  </div>
+
+  <!-- Left Control Sidebar -->
+  <aside class="control-sidebar">
+    <div class="branding">
+      <h2>AETHER<span>INSIGHT</span></h2>
+      <p>Product Demonstration</p>
+    </div>
+
+    <!-- Active List of Video Scenes -->
+    <div class="scene-selector-list" id="scene-list">
+      <!-- Generated in JS -->
+    </div>
+
+    <!-- Controls panel settings -->
+    <div class="settings-panel">
+      <div class="toggle-row">
+        <span>Audio Voiceover</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="voice-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <span>Ambient Music</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="music-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right Main Player Screen -->
+  <main class="player-container">
+    
+    <!-- Viewport containing computer frame mockup -->
+    <div class="viewport-screen">
+      
+      <!-- Virtual cursor -->
+      <div class="virtual-cursor" id="cursor"></div>
+
+      <!-- Annotation Callout -->
+      <div class="viewport-callout" id="callout">CALLOUT</div>
+
+      <!-- Monitor Frame -->
+      <div class="monitor-frame">
+        <div class="camera-wrapper" id="camera">
+          
+          <!-- Scene 1 Screen Content -->
+          <div class="screen active" id="screen-0">
+            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+              <div class="logo-pulse">AI</div>
+              <h1 style="font-family: var(--font-mono); font-size: 2.2rem; font-weight: 800; letter-spacing: 0.08em; margin-bottom: 0.5rem;">
+                AETHER<span style="color: var(--color-gold);">INSIGHT</span>
+              </h1>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--color-teal); font-weight: 700; letter-spacing: 0.15em;">
+                Cognitive Ingestion & Data Routing Engine
+              </span>
+              <div style="margin-top: 2rem; max-width: 480px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                A real-time database normalizer resolving spelling inconsistencies, scoring sentiment, and clustering unstructured files locally in 1-Click.
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 2 Screen Content: User Navigation Map -->
+          <div class="screen" id="screen-1">
+            <div class="app-mockup">
+              <!-- Left Menu -->
+              <div class="mock-sidebar">
+                <div class="mock-menu-item active" id="nav-item-1" style="height: 16px; border: 1px solid var(--color-gold);"></div>
+                <div class="mock-menu-item" id="nav-item-2"></div>
+                <div class="mock-menu-item" id="nav-item-3"></div>
+                <div class="mock-menu-item" id="nav-item-4"></div>
+                <div class="mock-menu-item" id="nav-item-5"></div>
+              </div>
+              <!-- Right Main Content -->
+              <div class="mock-main">
+                <div class="mock-header">
+                  <div class="mock-header-title">Cognitive Control panel</div>
+                  <div style="width: 40px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+                </div>
+                <div class="mock-grid">
+                  <div class="mock-kpi" id="mock-card-1"><div class="mock-kpi-bar"></div></div>
+                  <div class="mock-kpi" id="mock-card-2"><div class="mock-kpi-bar" style="width: 40%; background: var(--color-teal);"></div></div>
+                  <div class="mock-kpi" id="mock-card-3"><div class="mock-kpi-bar" style="width: 80%; background: var(--color-rose);"></div></div>
+                  <div class="mock-kpi" id="mock-card-4"><div class="mock-kpi-bar"></div></div>
+                </div>
+                <div style="flex-grow: 1; border: 1px dashed rgba(255,255,255,0.05); border-radius: 6px; padding: 1rem; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary);">
+                  Interactive analytical workspace
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 3 Screen Content: Step Demo -->
+          <div class="screen" id="screen-2">
+            <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+              <h4 style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; color: var(--color-gold); text-align: center;">Pipeline Workflow Transformation</h4>
+              
+              <div class="flow-card-container">
+                <div class="flow-node highlight" id="flow-node-1">
+                  <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-gold);">PHASE 1</div>
+                  <span style="font-size: 0.8rem; font-weight: 700;">Ingestion</span>
+                  <div style="font-size: 0.6rem; color: var(--text-secondary);">Quote-Aware CSV Reader</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" id="flow-node-2">
+                  <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-teal);">PHASE 2</div>
+                  <span style="font-size: 0.8rem; font-weight: 700;">Cleaning</span>
+                  <div style="font-size: 0.6rem; color: var(--text-secondary);">Levenshtein Merges</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node" id="flow-node-3">
+                  <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-blue);">PHASE 3</div>
+                  <span style="font-size: 0.8rem; font-weight: 700;">Clustering</span>
+                  <div style="font-size: 0.6rem; color: var(--text-secondary);">2D Trig Scattering</div>
+                </div>
+              </div>
+
+              <div style="text-align: center; font-size: 0.7rem; color: var(--text-secondary); font-family: var(--font-mono);" id="flow-status">
+                Loading datastream files...
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 4 Screen Content: System Architecture -->
+          <div class="screen" id="screen-3">
+            <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+              <h4 style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; color: var(--color-gold); text-align: center;">Technology Stack Architecture</h4>
+              
+              <div class="arch-grid">
+                <div class="arch-card" id="arch-card-1">
+                  <div class="arch-card-header">UI Interface</div>
+                  <div class="arch-item">React UI & Hooks</div>
+                  <div class="arch-item">CSS Luxe Gradients</div>
+                </div>
+                <div class="arch-card" id="arch-card-2">
+                  <div class="arch-card-header">Processing Engine</div>
+                  <div class="arch-item">FileReader API</div>
+                  <div class="arch-item">Levenshtein String Matcher</div>
+                  <div class="arch-item">Lexicon NLP Sentiment</div>
+                </div>
+                <div class="arch-card" id="arch-card-3">
+                  <div class="arch-card-header">Analytics Core</div>
+                  <div class="arch-item">Recharts Renderer</div>
+                  <div class="arch-item">Visual Dashboard Grid</div>
+                </div>
+              </div>
+
+              <div style="font-size: 0.7rem; color: var(--text-secondary); font-family: var(--font-mono); text-align: center;">
+                Solid lines indicate reactive data flows through the client browser sandboxed container.
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 5 Screen Content: Why select -->
+          <div class="screen" id="screen-4">
+            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 2rem;">
+              <h4 style="font-family: var(--font-mono); font-size: 0.9rem; text-transform: uppercase; color: var(--color-gold);">Why Select These Technologies?</h4>
+              
+              <div style="display: flex; gap: 2rem; justify-content: center; width: 100%;">
+                <div style="width: 140px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                  <h1 style="color: var(--color-teal); font-size: 1.8rem; font-family: var(--font-mono);">1.2s</h1>
+                  <span style="font-size: 0.75rem; color: var(--text-secondary);">Processing speed</span>
+                </div>
+                <div style="width: 140px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                  <h1 style="color: var(--color-gold); font-size: 1.8rem; font-family: var(--font-mono);">100%</h1>
+                  <span style="font-size: 0.75rem; color: var(--text-secondary);">Client Data Privacy</span>
+                </div>
+                <div style="width: 140px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                  <h1 style="color: var(--color-rose); font-size: 1.8rem; font-family: var(--font-mono);">0ms</h1>
+                  <span style="font-size: 0.75rem; color: var(--text-secondary);">API latency overhead</span>
+                </div>
+              </div>
+
+              <div style="max-width: 460px; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6;">
+                By utilizing local browser engines, AetherInsight achieves lightning-fast standardizing pipelines with zero network delays and absolute database privacy protection.
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 6 Screen Content: Conclusion -->
+          <div class="screen" id="screen-5">
+            <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 1.25rem;">
+              <div style="font-size: 3rem; color: var(--color-gold);">🏆</div>
+              <h2 style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800;">AetherInsight Project</h2>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--color-teal); font-weight: 700;">
+                Cognitive database routing engine
+              </span>
+              
+              <div style="margin-top: 1.5rem; display: flex; gap: 1.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                <span>🚀 40% Ingest Boost</span>
+                <span>🔒 100% Secure Storage</span>
+                <span>💡 1-Click Briefings</span>
+              </div>
+
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2rem;">
+                Thank you for exploring our platform.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtitle caption bar -->
+    <div class="caption-bar">
+      <span id="caption-text">Click the Start button to begin the product demonstration presentation.</span>
+    </div>
+
+    <!-- Playback dashboard controls -->
+    <div class="controller-bar">
+      <div class="playback-controls">
+        <button class="control-btn" id="prev-btn" title="Previous Scene">⏮</button>
+        <button class="control-btn play-pause" id="play-btn" title="Play presentation">▶</button>
+        <button class="control-btn" id="next-btn" title="Next Scene">⏭</button>
+      </div>
+
+      <div class="timeline-container">
+        <span class="time-stamp" id="current-time">0:00</span>
+        <div class="progress-bar-bg" id="progress-bar">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <span class="time-stamp" id="total-time">3:00</span>
+      </div>
+
+      <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-gold); font-weight: 700;">
+        STARTUP PITCH DECK
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Demo video scenes database
+    const scenes = [
+      {
+        id: 0,
+        title: "Introduction",
+        duration: 20, // seconds
+        narrate: "Introducing AetherInsight, an intelligent platform designed to solve raw unstructured feedback ingestion. Traditional support solutions often face challenges such as manual typos, duplicate contacts, and slow category mapping. Our application streamlines the entire process through an intuitive and AI-powered workflow.",
+        camScale: 1.0,
+        camTranslate: "0px, 0px",
+        cursorX: "50%",
+        cursorY: "50%",
+        calloutText: "AETHERINSIGHT COGNITIVE ENGINE",
+        calloutX: "50%",
+        calloutY: "30%",
+        action: () => {}
+      },
+      {
+        id: 1,
+        title: "User Navigation",
+        duration: 30, // seconds
+        narrate: "The platform is designed with a clean and user-friendly interface. Users can easily access different modules through the navigation panel. Each section is optimized for speed, accessibility, and productivity, from initial raw ingestion to standard reports.",
+        camScale: 1.15,
+        camTranslate: "-200px, 0px",
+        cursorX: "30px",
+        cursorY: "80px",
+        calloutText: "FROSTED AURORA MENU",
+        calloutX: "60px",
+        calloutY: "120px",
+        action: () => {
+          // cycle nav highlights
+          let activeIndex = 1;
+          const navInterval = setInterval(() => {
+            document.querySelectorAll('.mock-menu-item').forEach((item, idx) => {
+              if (idx === activeIndex - 1) {
+                item.classList.add('active');
+                item.style.border = '1px solid var(--color-gold)';
+              } else {
+                item.classList.remove('active');
+                item.style.border = 'none';
+              }
+            });
+            // move cursor over
+            const targetItem = document.getElementById(`nav-item-${activeIndex}`);
+            if (targetItem) {
+              const rect = targetItem.getBoundingClientRect();
+              cursor.style.left = `${rect.left + 5}px`;
+              cursor.style.top = `${rect.top + 5}px`;
+            }
+            activeIndex = activeIndex === 5 ? 1 : activeIndex + 1;
+          }, 1800);
+          return () => clearInterval(navInterval);
+        }
+      },
+      {
+        id: 2,
+        title: "Feature Demonstration",
+        duration: 50, // seconds
+        narrate: "Let's see how the platform works. First, the user uploads or enters the required information. The system then processes the data using advanced algorithms and AI-powered analysis. Spelling duplicates are merged, sentiments scored, and coordinates project dynamically. Results are generated in real time and presented through an interactive dashboard.",
+        camScale: 1.25,
+        camTranslate: "0px, 50px",
+        cursorX: "20%",
+        cursorY: "65%",
+        calloutText: "INGESTION & CLEANING CORE",
+        calloutX: "20%",
+        calloutY: "45%",
+        action: () => {
+          let step = 1;
+          const statusEl = document.getElementById('flow-status');
+          const flowInterval = setInterval(() => {
+            document.querySelectorAll('.flow-node').forEach(node => node.classList.remove('highlight'));
+            const currentNode = document.getElementById(`flow-node-${step}`);
+            if (currentNode) currentNode.classList.add('highlight');
+            
+            if (step === 1) {
+              statusEl.innerText = "📁 Ingesting Customer csv files...";
+              cursor.style.left = "20%"; cursor.style.top = "65%";
+            } else if (step === 2) {
+              statusEl.innerText = "⚙️ Merging duplicate user profiles (Levenshtein Distance)...";
+              cursor.style.left = "50%"; cursor.style.top = "65%";
+            } else if (step === 3) {
+              statusEl.innerText = "📊 Plotting projection coordinate clusters...";
+              cursor.style.left = "80%"; cursor.style.top = "65%";
+            }
+            step = step === 3 ? 1 : step + 1;
+          }, 2500);
+          return () => clearInterval(flowInterval);
+        }
+      },
+      {
+        id: 3,
+        title: "Technical Architecture",
+        duration: 40, // seconds
+        narrate: "The application is powered by a modern technology stack. The frontend is built using React and Vite, enabling responsive and interactive user experiences. The backend utilizes pure javascript data-engine modules for scalable processing and API management. AI functionalities are implemented using heuristic text classifiers, and data is safely stored in sandboxed localStorage.",
+        camScale: 1.2,
+        camTranslate: "0px, -20px",
+        cursorX: "50%",
+        cursorY: "40%",
+        calloutText: "CLIENT-SIDE ARCHITECTURE",
+        calloutX: "50%",
+        calloutY: "20%",
+        action: () => {
+          let currentCard = 1;
+          const cardInterval = setInterval(() => {
+            document.querySelectorAll('.arch-card').forEach(card => {
+              card.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+              card.style.boxShadow = 'none';
+            });
+            const activeCard = document.getElementById(`arch-card-${currentCard}`);
+            if (activeCard) {
+              activeCard.style.borderColor = 'var(--color-gold)';
+              activeCard.style.boxShadow = '0 0 12px var(--color-gold-glow)';
+              const rect = activeCard.getBoundingClientRect();
+              cursor.style.left = `${rect.left + rect.width / 2}px`;
+              cursor.style.top = `${rect.top + rect.height / 2}px`;
+            }
+            currentCard = currentCard === 3 ? 1 : currentCard + 1;
+          }, 3000);
+          return () => clearInterval(cardInterval);
+        }
+      },
+      {
+        id: 4,
+        title: "Why Select These Technologies",
+        duration: 20, // seconds
+        narrate: "Each technology was selected strategically. React provides fast user interface changes, client-side FileReader enables absolute data privacy, NLP lexicon triggers local classifications, and Recharts makes metrics completely readable. Together, they create a robust and future-ready platform.",
+        camScale: 1.05,
+        camTranslate: "0px, 10px",
+        cursorX: "50%",
+        cursorY: "50%",
+        calloutText: "99% RUNTIME OPTIMIZATION",
+        calloutX: "50%",
+        calloutY: "35%",
+        action: () => {}
+      },
+      {
+        id: 5,
+        title: "Impact & Conclusion",
+        duration: 20, // seconds
+        narrate: "By combining intelligent automation, user-centric design, and scalable architecture, AetherInsight delivers an efficient and reliable solution for support desks, product directors, and analytics developers. Thank you for exploring our platform.",
+        camScale: 1.0,
+        camTranslate: "0px, 0px",
+        cursorX: "50%",
+        cursorY: "50%",
+        calloutText: "AETHERINSIGHT PORTAL",
+        calloutX: "50%",
+        calloutY: "30%",
+        action: () => {}
+      }
+    ];
+
+    // DOM selectors
+    const startDemoBtn = document.getElementById('start-demo-btn');
+    const playOverlay = document.getElementById('play-overlay');
+    const sceneListContainer = document.getElementById('scene-list');
+    const cursor = document.getElementById('cursor');
+    const callout = document.getElementById('callout');
+    const camera = document.getElementById('camera');
+    const captionText = document.getElementById('caption-text');
+    const playBtn = document.getElementById('play-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalTimeEl = document.getElementById('total-time');
+    const progressFill = document.getElementById('progress-fill');
+    const progressBar = document.getElementById('progress-bar');
+    const voiceToggle = document.getElementById('voice-toggle');
+    const musicToggle = document.getElementById('music-toggle');
+
+    let isPlaying = false;
+    let currentSceneIdx = 0;
+    let timer = 0; // seconds into current scene
+    let globalTimer = 0; // seconds into total presentation
+    let timelineInterval = null;
+    let activeActionCleanup = null;
+    let speechActive = false;
+
+    // Web Audio Synthesizer variables
+    let audioCtx = null;
+    let ambientInterval = null;
+    let currentChordIdx = 0;
+    const chords = [
+      [130.81, 164.81, 196.00, 246.94], // Cmaj7 (C3, E3, G3, B3)
+      [110.00, 130.81, 164.81, 196.00], // Am7 (A2, C3, E3, G3)
+      [87.31,  130.81, 174.61, 220.00], // Fmaj7 (F2, C3, F3, A3)
+      [98.00,  146.83, 196.00, 246.94]  // G6 (G2, D3, G3, B3)
+    ];
+    let activeOscillators = [];
+    let filterNode = null;
+    let masterGain = null;
+
+    // Speech synthesis helper
+    let utterance = null;
+
+    // Compute total presentation time
+    const totalDuration = scenes.reduce((acc, curr) => acc + curr.duration, 0);
+    totalTimeEl.innerText = formatTime(totalDuration);
+
+    // Initialize list buttons
+    scenes.forEach((sc, idx) => {
+      const btn = document.createElement('button');
+      btn.className = `scene-btn ${idx === 0 ? 'active' : ''}`;
+      btn.id = `scene-btn-${idx}`;
+      btn.onclick = () => goToScene(idx);
+      
+      const numSpan = document.createElement('span');
+      numSpan.className = 'scene-num';
+      numSpan.innerText = idx + 1;
+
+      const titleSpan = document.createElement('span');
+      titleSpan.innerText = sc.title;
+
+      btn.appendChild(numSpan);
+      btn.appendChild(titleSpan);
+      sceneListContainer.appendChild(btn);
+    });
+
+    // Formatting timestamps
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Audio synth triggers
+    function playChord(chordNotes) {
+      if (!audioCtx || !musicToggle.checked) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      // Fade out old notes
+      activeOscillators.forEach(osc => {
+        try {
+          osc.gainNode.gain.setValueAtTime(osc.gainNode.gain.value, audioCtx.currentTime);
+          osc.gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+          osc.stop(audioCtx.currentTime + 1.3);
+        } catch(e) {}
+      });
+      activeOscillators = [];
+
+      // Setup gain and low-pass filter once
+      if (!masterGain) {
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        
+        filterNode = audioCtx.createBiquadFilter();
+        filterNode.type = 'lowpass';
+        filterNode.frequency.setValueAtTime(400, audioCtx.currentTime);
+        
+        filterNode.connect(masterGain);
+        masterGain.connect(audioCtx.destination);
+      }
+
+      // Smooth envelope filter sweeps
+      filterNode.frequency.setValueAtTime(300, audioCtx.currentTime);
+      filterNode.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 2.0);
+      filterNode.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 5.0);
+
+      // Play triangle nodes (gentle acoustic synth pad sound)
+      chordNotes.forEach(freq => {
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.detune.setValueAtTime((Math.random() - 0.5) * 6, audioCtx.currentTime);
+        
+        oscGain.gain.setValueAtTime(0, audioCtx.currentTime);
+        oscGain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 1.5);
+        
+        osc.connect(oscGain);
+        oscGain.connect(filterNode);
+        osc.start(audioCtx.currentTime);
+        
+        activeOscillators.push(osc);
+        osc.gainNode = oscGain;
+      });
+    }
+
+    function initMusicEngine() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (ambientInterval) clearInterval(ambientInterval);
+      
+      // Play immediately
+      playChord(chords[currentChordIdx]);
+      currentChordIdx = (currentChordIdx + 1) % chords.length;
+
+      // Loop chord progression every 6 seconds
+      ambientInterval = setInterval(() => {
+        if (musicToggle.checked) {
+          playChord(chords[currentChordIdx]);
+          currentChordIdx = (currentChordIdx + 1) % chords.length;
+        }
+      }, 6000);
+    }
+
+    // Voice Synthesis Text Reader
+    function speakSceneText(text, onFinished) {
+      window.speechSynthesis.cancel();
+      if (!voiceToggle.checked || !text) {
+        speechActive = false;
+        if (onFinished) onFinished();
+        return;
+      }
+
+      utterance = new SpeechSynthesisUtterance(text);
+      
+      // Select best default english voice
+      const voices = window.speechSynthesis.getVoices();
+      const voice = voices.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('David') || v.lang.startsWith('en')) || voices[0];
+      if (voice) utterance.voice = voice;
+
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      speechActive = true;
+
+      utterance.onend = () => {
+        speechActive = false;
+        if (onFinished) onFinished();
+      };
+
+      utterance.onerror = () => {
+        speechActive = false;
+        if (onFinished) onFinished();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Scene Navigation
+    function goToScene(idx) {
+      if (idx < 0 || idx >= scenes.length) return;
+      
+      // Cleanup previous animations
+      if (activeActionCleanup) {
+        activeActionCleanup();
+        activeActionCleanup = null;
+      }
+      window.speechSynthesis.cancel();
+      speechActive = false;
+
+      currentSceneIdx = idx;
+      timer = 0;
+
+      // Update Global timeline counter
+      globalTimer = scenes.slice(0, idx).reduce((acc, curr) => acc + curr.duration, 0);
+
+      // DOM adjustments
+      document.querySelectorAll('.scene-btn').forEach((btn, bIdx) => {
+        if (bIdx === idx) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      document.querySelectorAll('.screen').forEach((scr, sIdx) => {
+        if (sIdx === idx) scr.classList.add('active');
+        else scr.classList.remove('active');
+      });
+
+      const sc = scenes[idx];
+
+      // Camera zooms & transforms
+      camera.style.transform = `scale(${sc.camScale}) translate(${sc.camTranslate})`;
+
+      // Move virtual cursor
+      cursor.style.left = sc.cursorX;
+      cursor.style.top = sc.cursorY;
+
+      // Display annotation callout
+      callout.innerText = sc.calloutText;
+      callout.style.left = sc.calloutX;
+      callout.style.top = sc.calloutY;
+      callout.style.opacity = 1;
+      setTimeout(() => { callout.style.opacity = 0; }, 4000); // fade callout out after 4s
+
+      // Update captions
+      captionText.innerHTML = `<strong>AetherInsight pitch:</strong> ${sc.narrate}`;
+
+      // Start inner workflow simulations
+      if (sc.action) {
+        activeActionCleanup = sc.action();
+      }
+
+      // Speak narration
+      if (isPlaying) {
+        speakSceneText(sc.narrate, () => {
+          // If scene speech finishes before scene duration, let it finish naturally
+        });
+      }
+
+      updateTimelineDisplay();
+    }
+
+    function updateTimelineDisplay() {
+      currentTimeEl.innerText = formatTime(globalTimer);
+      const percentage = (globalTimer / totalDuration) * 100;
+      progressFill.style.width = `${percentage}%`;
+    }
+
+    // Playback control ticks
+    function startTimeline() {
+      if (timelineInterval) clearInterval(timelineInterval);
+      
+      timelineInterval = setInterval(() => {
+        if (!isPlaying) return;
+
+        timer++;
+        globalTimer++;
+
+        updateTimelineDisplay();
+
+        const currentScene = scenes[currentSceneIdx];
+
+        // Scene boundary check
+        if (timer >= currentScene.duration) {
+          if (currentSceneIdx < scenes.length - 1) {
+            goToScene(currentSceneIdx + 1);
+          } else {
+            // End of demo
+            pauseDemo();
+            globalTimer = 0;
+            goToScene(0);
+          }
+        }
+      }, 1000);
+    }
+
+    function playDemo() {
+      isPlaying = true;
+      playBtn.innerText = "⏸";
+      playBtn.title = "Pause presentation";
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      
+      startTimeline();
+      speakSceneText(scenes[currentSceneIdx].narrate);
+    }
+
+    function pauseDemo() {
+      isPlaying = false;
+      playBtn.innerText = "▶";
+      playBtn.title = "Play presentation";
+      if (timelineInterval) {
+        clearInterval(timelineInterval);
+        timelineInterval = null;
+      }
+      window.speechSynthesis.cancel();
+      speechActive = false;
+    }
+
+    // Controls listeners
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        pauseDemo();
+      } else {
+        playDemo();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentSceneIdx > 0) {
+        goToScene(currentSceneIdx - 1);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentSceneIdx < scenes.length - 1) {
+        goToScene(currentSceneIdx + 1);
+      }
+    });
+
+    progressBar.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      const targetSec = pct * totalDuration;
+
+      // Find which scene contains this timestamp
+      let accumulated = 0;
+      let targetIdx = 0;
+      for (let i = 0; i < scenes.length; i++) {
+        accumulated += scenes[i].duration;
+        if (targetSec <= accumulated) {
+          targetIdx = i;
+          break;
+        }
+      }
+
+      goToScene(targetIdx);
+      // Offset timer inside that scene
+      const sceneStartSec = scenes.slice(0, targetIdx).reduce((acc, curr) => acc + curr.duration, 0);
+      timer = Math.floor(targetSec - sceneStartSec);
+      globalTimer = Math.floor(targetSec);
+      updateTimelineDisplay();
+    });
+
+    // Toggle options
+    musicToggle.addEventListener('change', () => {
+      if (!musicToggle.checked) {
+        // fade out ambient pad notes immediately
+        activeOscillators.forEach(osc => {
+          try {
+            osc.stop();
+          } catch(e) {}
+        });
+        activeOscillators = [];
+      } else {
+        initMusicEngine();
+      }
+    });
+
+    voiceToggle.addEventListener('change', () => {
+      if (!voiceToggle.checked) {
+        window.speechSynthesis.cancel();
+      } else if (isPlaying) {
+        speakSceneText(scenes[currentSceneIdx].narrate);
+      }
+    });
+
+    // Start presentation from button
+    startDemoBtn.addEventListener('click', () => {
+      playOverlay.style.display = 'none';
+      initMusicEngine();
+      goToScene(0);
+      playDemo();
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        playBtn.click();
+      } else if (e.key === 'ArrowRight') {
+        nextBtn.click();
+      } else if (e.key === 'ArrowLeft') {
+        prevBtn.click();
+      }
+    });
+
+    // Preload voices
+    window.speechSynthesis.onvoiceschanged = () => {
+      // triggers speech engines lookup on Chrome/Safari
+    };
+  </script>
+</body>
+</html>
